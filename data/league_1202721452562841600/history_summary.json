@@ -1,0 +1,65 @@
+[
+  {
+    "season": "2019",
+    "league_id": "465653851932848128",
+    "name": "Farhiless Dynasty",
+    "total_managers": 11,
+    "total_rosters": 10,
+    "total_draft_picks": 200,
+    "total_transactions": 267
+  },
+  {
+    "season": "2020",
+    "league_id": "516056738890125312",
+    "name": "Farhiless Dynasty",
+    "total_managers": 11,
+    "total_rosters": 10,
+    "total_draft_picks": 50,
+    "total_transactions": 337
+  },
+  {
+    "season": "2021",
+    "league_id": "730226207148331008",
+    "name": "Farhiless Dynasty",
+    "total_managers": 11,
+    "total_rosters": 10,
+    "total_draft_picks": 50,
+    "total_transactions": 296
+  },
+  {
+    "season": "2022",
+    "league_id": "802045785788235776",
+    "name": "Farhiless Dynasty",
+    "total_managers": 13,
+    "total_rosters": 10,
+    "total_draft_picks": 50,
+    "total_transactions": 335
+  },
+  {
+    "season": "2023",
+    "league_id": "938583442021761024",
+    "name": "Farhiless Dynasty",
+    "total_managers": 13,
+    "total_rosters": 10,
+    "total_draft_picks": 50,
+    "total_transactions": 308
+  },
+  {
+    "season": "2024",
+    "league_id": "1075122116200120320",
+    "name": "Farhiless Dynasty",
+    "total_managers": 14,
+    "total_rosters": 10,
+    "total_draft_picks": 50,
+    "total_transactions": 312
+  },
+  {
+    "season": "2025",
+    "league_id": "1202721452562841600",
+    "name": "Farhiless Dynasty",
+    "total_managers": 14,
+    "total_rosters": 10,
+    "total_draft_picks": 50,
+    "total_transactions": 386
+  }
+]

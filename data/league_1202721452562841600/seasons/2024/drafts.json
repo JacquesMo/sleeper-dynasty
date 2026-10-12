@@ -1,0 +1,57 @@
+[
+  {
+    "created": 1710691596607,
+    "creators": [
+      "465660161965420544"
+    ],
+    "draft_id": "1075122116200120321",
+    "draft_order": {
+      "217869853623586816": 4,
+      "231187309825880064": 6,
+      "459488462693724160": 3,
+      "465655741689098240": 8,
+      "465660161965420544": 10,
+      "465684767677870080": 7,
+      "466704465974521856": 2,
+      "467141969441714176": 9,
+      "622598735830044672": 1,
+      "81237981251649536": 5
+    },
+    "last_message_id": "1133536411698663424",
+    "last_message_time": 1724618649938,
+    "last_picked": 1724618649517,
+    "league_id": "1075122116200120320",
+    "metadata": {
+      "description": "",
+      "name": "Farhiless Dynasty",
+      "scoring_type": "dynasty_2qb"
+    },
+    "season": "2024",
+    "season_type": "regular",
+    "settings": {
+      "alpha_sort": 0,
+      "autopause_enabled": 0,
+      "autopause_end_time": 840,
+      "autopause_start_time": 120,
+      "autostart": 0,
+      "cpu_autopick": 1,
+      "enforce_position_limits": 1,
+      "nomination_timer": 60,
+      "pick_timer": 90,
+      "player_type": 0,
+      "reversal_round": 0,
+      "rounds": 5,
+      "slots_bn": 11,
+      "slots_flex": 1,
+      "slots_qb": 2,
+      "slots_rb": 2,
+      "slots_te": 1,
+      "slots_wr": 3,
+      "teams": 10
+    },
+    "sport": "nfl",
+    "start_time": 1724616283337,
+    "status": "complete",
+    "type": "linear"
+  }
+]

@@ -1,0 +1,51 @@
+[
+  {
+    "created": 1577400023723,
+    "creators": [
+      "465660161965420544"
+    ],
+    "draft_id": "516056738890125313",
+    "draft_order": {
+      "217869853623586816": 1,
+      "231187309825880064": 4,
+      "459488462693724160": 10,
+      "465655741689098240": 3,
+      "465660161965420544": 8,
+      "465684767677870080": 2,
+      "466019035478224896": 7,
+      "466704465974521856": 9,
+      "467141969441714176": 5,
+      "81237981251649536": 6
+    },
+    "last_message_id": "607654023859814400",
+    "last_message_time": 1599238518255,
+    "last_picked": 1599238517937,
+    "league_id": "516056738890125312",
+    "metadata": {
+      "description": "",
+      "name": "Farhiless Dynasty",
+      "scoring_type": "dynasty"
+    },
+    "season": "2020",
+    "season_type": "regular",
+    "settings": {
+      "alpha_sort": 0,
+      "cpu_autopick": 1,
+      "pick_timer": 60,
+      "player_type": 0,
+      "reversal_round": 0,
+      "rounds": 5,
+      "slots_bn": 11,
+      "slots_flex": 1,
+      "slots_qb": 2,
+      "slots_rb": 2,
+      "slots_te": 1,
+      "slots_wr": 3,
+      "teams": 10
+    },
+    "sport": "nfl",
+    "start_time": 1599235788188,
+    "status": "complete",
+    "type": "linear"
+  }
+]

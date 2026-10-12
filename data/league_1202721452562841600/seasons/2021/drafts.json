@@ -1,0 +1,52 @@
+[
+  {
+    "created": 1628462004032,
+    "creators": [
+      "465660161965420544"
+    ],
+    "draft_id": "730226207148331009",
+    "draft_order": {
+      "217869853623586816": 3,
+      "231187309825880064": 6,
+      "459488462693724160": 10,
+      "465655741689098240": 8,
+      "465660161965420544": 9,
+      "465684767677870080": 4,
+      "466704465974521856": 7,
+      "467141969441714176": 5,
+      "81237981251649536": 2
+    },
+    "last_message_id": "740620045423521792",
+    "last_message_time": 1630940088185,
+    "last_picked": 1630940087648,
+    "league_id": "730226207148331008",
+    "metadata": {
+      "description": "",
+      "name": "Farhiless Dynasty",
+      "scoring_type": "dynasty_2qb"
+    },
+    "season": "2021",
+    "season_type": "regular",
+    "settings": {
+      "alpha_sort": 0,
+      "cpu_autopick": 1,
+      "enforce_position_limits": 1,
+      "nomination_timer": 60,
+      "pick_timer": 60,
+      "player_type": 0,
+      "reversal_round": 0,
+      "rounds": 5,
+      "slots_bn": 11,
+      "slots_flex": 1,
+      "slots_qb": 2,
+      "slots_rb": 2,
+      "slots_te": 1,
+      "slots_wr": 3,
+      "teams": 10
+    },
+    "sport": "nfl",
+    "start_time": 1630938646882,
+    "status": "complete",
+    "type": "linear"
+  }
+]
