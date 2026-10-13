@@ -609,9 +609,9 @@ def export_data_files(league_dir, default_uid, players_db, user_history, draft_p
         standalone_path = Path("team_report_standalone.html")
         standalone_path.write_text(standalone_html, encoding="utf-8")
         
-        # Also update index.html for hosting
-        Path("index.html").write_text(html_template, encoding="utf-8")
-        print(f"Saved single-file shareable HTML: {standalone_path.resolve()}")
+        # Also update index.html for hosting with all data embedded
+        Path("index.html").write_text(standalone_html, encoding="utf-8")
+        print(f"Saved standalone embedded HTML to index.html and {standalone_path.resolve()}")
     
     print(f"Interactive dashboard is ready: {Path('team_report.html').resolve()}")
 
