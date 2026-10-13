@@ -267,7 +267,7 @@ def build_full_history(league_dir, uid, players_db):
         seasons_data[s] = {
             "season": s,
             "roster": formatted_roster,
-            "player_ids": set(player_ids),
+            "player_ids": list(player_ids),
             "acq_breakdown": dict(acq_breakdown)
         }
 
@@ -421,34 +421,111 @@ def print_turnover_console(transition):
     print("=" * 78)
 
 
-def export_data_files(full_history):
-
+def get_all_league_managers(league_dir):
     """
-    Exports organized dynasty history to external files:
+    Finds all managers across all seasons in the league.
+    """
+    seasons_dir = league_dir / "seasons"
+    season_names = sorted([d.name for d in seasons_dir.iterdir() if d.is_dir()])
+    
+    managers_dict = {}
+    for s in season_names:
+        users = load_json(seasons_dir / s / "users.json") or []
+        for u in users:
+            uid = u.get("user_id")
+            if not uid:
+                continue
+            dname = u.get("display_name") or f"Manager_{uid}"
+            tname = u.get("metadata", {}).get("team_name") or ""
+            managers_dict[uid] = {
+                "user_id": uid,
+                "display_name": dname,
+                "team_name": tname
+            }
+    return managers_dict
+
+
+def export_data_files(league_dir, default_uid, players_db, user_history):
+    """
+    Exports organized dynasty history for all league managers to external files:
     - data/team_history.json (Pure JSON for data analysis/inspection)
     - team_data.js (External JavaScript bundle read by team_report.html)
     """
+    print("\nCompiling full league history for all managers...")
+    all_managers_meta = get_all_league_managers(league_dir)
+    
+    all_teams_export = {}
+    for uid, info in all_managers_meta.items():
+        if uid == default_uid:
+            hist = user_history
+        else:
+            hist = build_full_history(league_dir, uid, players_db)
+        
+        # Keep only teams that had at least 1 rostered player
+        seasons_with_rosters = [s for s, d in hist["seasons_data"].items() if len(d["roster"]) > 0]
+        if not seasons_with_rosters:
+            continue
+            
+        all_teams_export[uid] = {
+            "user_id": uid,
+            "display_name": info["display_name"],
+            "team_name": info["team_name"],
+            "seasons": hist["seasons"],
+            "seasons_active": seasons_with_rosters,
+            "seasons_data": {
+                s: {
+                    "season": s,
+                    "roster": d["roster"],
+                    "acq_breakdown": d["acq_breakdown"]
+                }
+                for s, d in hist["seasons_data"].items()
+            },
+            "transitions": hist["transitions"],
+            "trades": hist["trades"],
+            "draft_picks": hist["draft_picks"],
+            "all_players": hist["all_players"]
+        }
+
+    # Sort managers so default_uid (jacques) is first, others alphabetical
+    other_uids = sorted([uid for uid in all_teams_export if uid != default_uid], 
+                        key=lambda uid: all_teams_export[uid]["display_name"].lower())
+    ordered_uids = ([default_uid] if default_uid in all_teams_export else []) + other_uids
+    
+    managers_list = [
+        {
+            "user_id": uid,
+            "display_name": all_teams_export[uid]["display_name"],
+            "team_name": all_teams_export[uid]["team_name"],
+            "seasons_count": len(all_teams_export[uid]["seasons_active"])
+        }
+        for uid in ordered_uids
+    ]
+
     export_obj = {
-        "seasons": full_history["seasons"],
+        "default_manager_id": default_uid,
+        "managers": managers_list,
+        "teams": all_teams_export,
+        # Keep root fields for backwards compatibility with single-manager mode
+        "seasons": user_history["seasons"],
         "seasons_data": {
             s: {
                 "season": s,
                 "roster": data["roster"],
                 "acq_breakdown": data["acq_breakdown"]
             }
-            for s, data in full_history["seasons_data"].items()
+            for s, data in user_history["seasons_data"].items()
         },
-        "transitions": full_history["transitions"],
-        "trades": full_history["trades"],
-        "draft_picks": full_history["draft_picks"],
-        "all_players": full_history["all_players"]
+        "transitions": user_history["transitions"],
+        "trades": user_history["trades"],
+        "draft_picks": user_history["draft_picks"],
+        "all_players": user_history["all_players"]
     }
     
     # 1. Pure JSON file in data/
     json_path = DATA_DIR / "team_history.json"
     with open(json_path, "w", encoding="utf-8") as f:
         json.dump(export_obj, f, indent=2, ensure_ascii=False)
-    print(f"Saved compiled team history JSON: {json_path.resolve()}")
+    print(f"Saved compiled league history JSON ({len(managers_list)} teams): {json_path.resolve()}")
 
     # 2. External JS bundle team_data.js (read by team_report.html)
     js_bundle_path = Path("team_data.js")
@@ -510,7 +587,7 @@ def main():
 
     # Export data files for interactive dashboard
     if GENERATE_HTML:
-        export_data_files(history)
+        export_data_files(league_dir, uid, players_db, history)
 
 
 if __name__ == "__main__":

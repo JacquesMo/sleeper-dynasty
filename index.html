@@ -36,6 +36,13 @@
   .title-area h1 { font-size: 26px; font-weight: 800; letter-spacing: -0.5px; display: flex; align-items: center; gap: 10px; }
   .title-area .subtitle { color: var(--text-secondary); font-size: 14px; margin-top: 4px; }
   
+  /* Header Controls & Manager Selector */
+  .header-controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  .manager-select-box { display: flex; align-items: center; gap: 8px; background: var(--bg-card); padding: 5px 12px; border-radius: 8px; border: 1px solid var(--border); }
+  .manager-label { font-size: 11px; font-weight: 700; text-transform: uppercase; color: var(--text-secondary); letter-spacing: 0.5px; }
+  .manager-dropdown { background: #0b0f19; color: var(--accent); border: 1px solid var(--border); padding: 7px 12px; border-radius: 6px; font-size: 13px; font-weight: 700; cursor: pointer; outline: none; transition: border-color 0.15s; max-width: 260px; }
+  .manager-dropdown:hover, .manager-dropdown:focus { border-color: var(--accent); }
+  
   /* KPI Cards */
   .kpi-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 14px; margin-bottom: 24px; }
   .kpi-card { background: var(--bg-card); border: 1px solid var(--border); border-radius: 10px; padding: 14px 18px; }
@@ -133,16 +140,22 @@
 <div class="header">
   <div class="title-area">
     <h1>Farhiless Dynasty Team Evolution</h1>
-    <div class="subtitle">Manager: <strong>jacques</strong> • Complete 7-Season Lifespan (2019 – 2025)</div>
+    <div class="subtitle" id="managerSubtitle">Manager: <strong>jacques</strong> • Complete 7-Season Lifespan (2019 – 2025)</div>
   </div>
-  <input type="text" id="playerSearch" class="search-box" placeholder="Search any player..." oninput="filterActiveView()">
+  <div class="header-controls">
+    <div class="manager-select-box" id="managerSelectBox">
+      <label for="managerSelect" class="manager-label">Team / Manager</label>
+      <select id="managerSelect" class="manager-dropdown" onchange="switchManager(this.value)"></select>
+    </div>
+    <input type="text" id="playerSearch" class="search-box" placeholder="Search any player..." oninput="filterActiveView()">
+  </div>
 </div>
 
 <!-- KPI Summary -->
 <div class="kpi-row">
   <div class="kpi-card">
     <div class="kpi-label">Dynasty Span</div>
-    <div class="kpi-val">7 Seasons</div>
+    <div class="kpi-val" id="kpiDynastySpan">7 Seasons</div>
   </div>
   <div class="kpi-card">
     <div class="kpi-label">Total Trades</div>
@@ -176,7 +189,8 @@
 <script src="team_data.js"></script>
 <script>
   const appData = window.appData || {};
-  const seasons = appData.seasons || [];
+  let currentManagerId = appData.default_manager_id || (appData.managers && appData.managers[0] ? appData.managers[0].user_id : null);
+  let currentTeamData = {};
   let currentSeason = "2022";
   let activeTab = "roster";
 
@@ -188,17 +202,60 @@
     return "badge-FreeAgency";
   }
 
-  function init() {
-    if (!appData || !appData.seasons) {
-      document.getElementById("mainView").innerHTML = "<div class='card'>Error: team_data.js not loaded. Run organize_team_history.py to generate it.</div>";
-      return;
+  function getActiveTeam() {
+    if (appData.teams && currentManagerId && appData.teams[currentManagerId]) {
+      return appData.teams[currentManagerId];
+    }
+    return appData;
+  }
+
+  function switchManager(uid) {
+    currentManagerId = uid;
+    loadManagerUI();
+  }
+
+  function loadManagerUI() {
+    currentTeamData = getActiveTeam();
+    if (!currentTeamData) return;
+
+    // Header info
+    const sub = document.getElementById("managerSubtitle");
+    if (sub) {
+      const dName = currentTeamData.display_name || "Manager";
+      const tName = currentTeamData.team_name ? ` • <em>${currentTeamData.team_name}</em>` : "";
+      const seasonsArr = currentTeamData.seasons_active || currentTeamData.seasons || [];
+      const sSpan = seasonsArr.length > 0 ? ` • Seasons ${seasonsArr[0]} – ${seasonsArr[seasonsArr.length - 1]}` : "";
+      sub.innerHTML = `Manager: <strong>${dName}</strong>${tName}${sSpan}`;
+    }
+
+    // KPIs
+    if (document.getElementById("kpiDynastySpan")) {
+      const sCount = (currentTeamData.seasons_active || currentTeamData.seasons || []).length;
+      document.getElementById("kpiDynastySpan").innerText = `${sCount} Seasons`;
+    }
+    if (document.getElementById("kpiTrades")) {
+      document.getElementById("kpiTrades").innerText = `${(currentTeamData.trades || []).length} Trades`;
+    }
+    if (document.getElementById("kpiDrafts")) {
+      document.getElementById("kpiDrafts").innerText = `${(currentTeamData.draft_picks || []).length} Picks`;
+    }
+    if (document.getElementById("kpiPlayers")) {
+      document.getElementById("kpiPlayers").innerText = `${(currentTeamData.all_players || []).length} Players`;
+    }
+
+    // Season pills
+    const seasons = currentTeamData.seasons || [];
+    if (!seasons.includes(currentSeason) && seasons.length > 0) {
+      currentSeason = seasons[seasons.length - 1];
     }
 
     const sContainer = document.getElementById("seasonSelector");
+    sContainer.innerHTML = "";
     seasons.forEach(s => {
+      const hasRoster = currentTeamData.seasons_data && currentTeamData.seasons_data[s] && (currentTeamData.seasons_data[s].roster || []).length > 0;
       const btn = document.createElement("button");
       btn.className = `season-pill ${s === currentSeason ? 'active' : ''}`;
-      btn.innerText = s;
+      btn.innerText = s + (hasRoster ? "" : " (No Roster)");
       btn.id = `pill-${s}`;
       btn.onclick = () => {
         currentSeason = s;
@@ -208,7 +265,33 @@
       };
       sContainer.appendChild(btn);
     });
+
     render();
+  }
+
+  function init() {
+    if (!appData) {
+      document.getElementById("mainView").innerHTML = "<div class='card'>Error: team_data.js not loaded. Run organize_team_history.py to generate it.</div>";
+      return;
+    }
+
+    // Populate Manager Dropdown
+    const select = document.getElementById("managerSelect");
+    if (appData.managers && appData.managers.length > 0 && select) {
+      select.innerHTML = "";
+      appData.managers.forEach(m => {
+        const opt = document.createElement("option");
+        opt.value = m.user_id;
+        const tLabel = m.team_name ? ` (${m.team_name})` : "";
+        opt.innerText = `${m.display_name}${tLabel} • ${m.seasons_count}y`;
+        if (m.user_id === currentManagerId) opt.selected = true;
+        select.appendChild(opt);
+      });
+    } else if (document.getElementById("managerSelectBox")) {
+      document.getElementById("managerSelectBox").style.display = "none";
+    }
+
+    loadManagerUI();
   }
 
   function switchView(tab, event) {
@@ -237,8 +320,14 @@
   }
 
   function renderRosterView(container) {
-    const sData = appData.seasons_data[currentSeason];
-    if (!sData) return;
+    const sData = (currentTeamData.seasons_data && currentTeamData.seasons_data[currentSeason]) ? currentTeamData.seasons_data[currentSeason] : null;
+    if (!sData || !sData.roster || sData.roster.length === 0) {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `<div class="card-title">Season ${currentSeason}</div><p style="color:var(--text-muted); margin-top:10px;">No roster recorded for ${currentTeamData.display_name} in season ${currentSeason}.</p>`;
+      container.appendChild(card);
+      return;
+    }
 
     const roster = sData.roster;
     const total = roster.length;
@@ -254,7 +343,7 @@
 
     card.innerHTML = `
       <div class="card-header">
-        <div class="card-title">Season ${currentSeason} Roster (${total} Players)</div>
+        <div class="card-title">Season ${currentSeason} Roster (${total} Players) - ${currentTeamData.display_name}</div>
         <div style="font-size: 13px; color: var(--text-secondary);">Ordered by QB, RB, WR, TE</div>
       </div>
       <div class="acq-bar">
@@ -318,13 +407,22 @@
   }
 
   function renderTurnoverView(container) {
-    const transition = appData.transitions.find(t => t.to_season === currentSeason) || appData.transitions[0];
+    const transitions = currentTeamData.transitions || [];
+    const transition = transitions.find(t => t.to_season === currentSeason) || transitions[0];
     
+    if (!transition) {
+      const card = document.createElement("div");
+      card.className = "card";
+      card.innerHTML = `<div class="card-title">Year-over-Year Turnover</div><p style="color:var(--text-muted); margin-top:10px;">No transitions available.</p>`;
+      container.appendChild(card);
+      return;
+    }
+
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
       <div class="card-header">
-        <div class="card-title">${transition.label}</div>
+        <div class="card-title">${transition.label} - ${currentTeamData.display_name}</div>
         <div style="font-size: 13px; color: var(--text-secondary);">
           Turnover: +${transition.joined.length} Joined • -${transition.departed.length} Departed • ${transition.retained.length} Retained
         </div>
@@ -392,12 +490,13 @@
   }
 
   function renderLifecycleView(container) {
+    const allPlayers = currentTeamData.all_players || [];
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
       <div class="card-header">
-        <div class="card-title">All-Time Dynasty Players (${appData.all_players.length})</div>
-        <div style="font-size: 13px; color: var(--text-secondary);">Sorted by longest tenure on your team</div>
+        <div class="card-title">All-Time Dynasty Players (${allPlayers.length}) - ${currentTeamData.display_name}</div>
+        <div style="font-size: 13px; color: var(--text-secondary);">Sorted by longest tenure on this team</div>
       </div>
       <table class="data-table" id="lifecycleTable">
         <thead>
@@ -410,7 +509,7 @@
           </tr>
         </thead>
         <tbody>
-          ${appData.all_players.map(p => `
+          ${allPlayers.map(p => `
             <tr>
               <td><strong>${p.name}</strong></td>
               <td><span class="pos-tag ${p.position}">${p.position}</span></td>
@@ -429,23 +528,25 @@
   }
 
   function renderTradesView(container) {
+    const trades = currentTeamData.trades || [];
     const card = document.createElement("div");
     card.className = "card";
     card.innerHTML = `
       <div class="card-header">
-        <div class="card-title">Dynasty Trade Ledger (${appData.trades.length} Total Trades)</div>
+        <div class="card-title">Dynasty Trade Ledger (${trades.length} Total Trades) - ${currentTeamData.display_name}</div>
         <div style="font-size: 13px; color: var(--text-secondary);">Chronological breakdown of assets sent and received</div>
       </div>
       <div id="tradesContainer">
-        ${appData.trades.map((t, idx) => `
+        ${trades.length === 0 ? '<div style="color:var(--text-muted); padding:20px 0;">No trades recorded for this team.</div>' : ''}
+        ${trades.map((t, idx) => `
           <div class="trade-row">
             <div class="trade-meta">
-              <strong>Trade #${appData.trades.length - idx} with ${t.partner}</strong>
+              <strong>Trade #${trades.length - idx} with ${t.partner}</strong>
               <span>Season ${t.season} • ${t.date}</span>
             </div>
             <div class="trade-boxes">
               <div class="trade-in">
-                <div class="trade-in-title">↓ YOU RECEIVED</div>
+                <div class="trade-in-title">↓ RECEIVED</div>
                 <ul class="clean-list">
                   ${t.received_players.map(p => `<li>• ${p}</li>`).join('')}
                   ${t.received_picks.map(p => `<li>• ${p} Draft Pick</li>`).join('')}
@@ -453,7 +554,7 @@
                 </ul>
               </div>
               <div class="trade-out">
-                <div class="trade-out-title">↑ YOU SENT</div>
+                <div class="trade-out-title">↑ SENT</div>
                 <ul class="clean-list">
                   ${t.sent_players.map(p => `<li>• ${p}</li>`).join('')}
                   ${t.sent_picks.map(p => `<li>• ${p} Draft Pick</li>`).join('')}
