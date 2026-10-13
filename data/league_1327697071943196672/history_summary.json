@@ -61,5 +61,14 @@
     "total_rosters": 10,
     "total_draft_picks": 50,
     "total_transactions": 386
+  },
+  {
+    "season": "2026",
+    "league_id": "1327697071943196672",
+    "name": "Farhiless Dynasty",
+    "total_managers": 15,
+    "total_rosters": 10,
+    "total_draft_picks": 50,
+    "total_transactions": 114
   }
 ]

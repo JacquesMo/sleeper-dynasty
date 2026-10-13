@@ -28,8 +28,8 @@ if sys.stderr and hasattr(sys.stderr, "reconfigure"):
 # CONFIGURATION SETTINGS (Edit parameters directly here)
 # ==============================================================================
 USERNAME = "jacques"              # Your Sleeper username
-LEAGUE_NAME_OR_ID = "Farhiless"   # League name (e.g. "Farhiless") or exact League ID (e.g. "1202721452562841600")
-SKIP_PLAYERS_DB = False           # Set True to skip downloading players.json if already cached
+LEAGUE_NAME_OR_ID = "1327697071943196672"   # League ID for 2026 Farhiless Dynasty
+SKIP_PLAYERS_DB = True           # Skip downloading players.json if already cached (12k players)
 # ==============================================================================
 
 BASE_URL = "https://api.sleeper.app/v1"

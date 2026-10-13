@@ -140,7 +140,7 @@
 <div class="header">
   <div class="title-area">
     <h1>Farhiless Dynasty Team Evolution</h1>
-    <div class="subtitle" id="managerSubtitle">Manager: <strong>jacques</strong> • Complete 7-Season Lifespan (2019 – 2025)</div>
+    <div class="subtitle" id="managerSubtitle">Manager: <strong>jacques</strong> • Complete 8-Season Lifespan (2019 – 2026)</div>
   </div>
   <div class="header-controls">
     <div class="manager-select-box" id="managerSelectBox">
@@ -155,7 +155,7 @@
 <div class="kpi-row">
   <div class="kpi-card">
     <div class="kpi-label">Dynasty Span</div>
-    <div class="kpi-val" id="kpiDynastySpan">7 Seasons</div>
+    <div class="kpi-val" id="kpiDynastySpan">8 Seasons</div>
   </div>
   <div class="kpi-card">
     <div class="kpi-label">Total Trades</div>
@@ -191,7 +191,7 @@
   const appData = window.appData || {};
   let currentManagerId = appData.default_manager_id || (appData.managers && appData.managers[0] ? appData.managers[0].user_id : null);
   let currentTeamData = {};
-  let currentSeason = "2022";
+  let currentSeason = "2026";
   let activeTab = "roster";
 
   function getBadgeClass(method) {
@@ -549,7 +549,7 @@
                 <div class="trade-in-title">↓ RECEIVED</div>
                 <ul class="clean-list">
                   ${t.received_players.map(p => `<li>• ${p}</li>`).join('')}
-                  ${t.received_picks.map(p => `<li>• ${p} Draft Pick</li>`).join('')}
+                  ${t.received_picks.map(p => `<li>• ${p}</li>`).join('')}
                   ${t.received_players.length === 0 && t.received_picks.length === 0 ? '<li>(FAAB / Future asset)</li>' : ''}
                 </ul>
               </div>
@@ -557,7 +557,7 @@
                 <div class="trade-out-title">↑ SENT</div>
                 <ul class="clean-list">
                   ${t.sent_players.map(p => `<li>• ${p}</li>`).join('')}
-                  ${t.sent_picks.map(p => `<li>• ${p} Draft Pick</li>`).join('')}
+                  ${t.sent_picks.map(p => `<li>• ${p}</li>`).join('')}
                   ${t.sent_players.length === 0 && t.sent_picks.length === 0 ? '<li>(FAAB / Future asset)</li>' : ''}
                 </ul>
               </div>

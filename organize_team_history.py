@@ -24,7 +24,7 @@ if sys.stderr and hasattr(sys.stderr, "reconfigure"):
 # ==============================================================================
 # CONFIGURATION PARAMETERS (Edit directly here)
 # ==============================================================================
-SEASON = 2022               # Target season to view in console: 2019-2025, or "ALL"
+SEASON = 2026               # Target season to view in console: 2019-2026, or "ALL"
 VIEW = "MOVEMENT"           # Console view: "ROSTER", "MOVEMENT" (turnover), "TRADES", "TIMELINE", "ALL"
 POSITION_ORDER = ["QB", "RB", "WR", "TE", "K", "DEF"]
 GENERATE_HTML = True        # Generates comprehensive visual interactive dashboard team_report.html
@@ -51,10 +51,70 @@ def get_user_and_league():
         print("Error: No league data found in data/. Run fetch_sleeper_data.py first.")
         sys.exit(1)
     
+    # Pick directory with the most seasons (e.g. 2019-2026)
+    league_dirs.sort(key=lambda d: len(list((d / "seasons").iterdir())) if (d / "seasons").exists() else 0, reverse=True)
     return user, league_dirs[0]
 
 
-def build_full_history(league_dir, uid, players_db):
+def build_draft_pick_map(league_dir, season_names, players_db):
+    """
+    Builds a lookup table mapping (season, round, original_roster_id)
+    to the specific player drafted with that pick.
+    """
+    draft_pick_map = {}
+    seasons_dir = league_dir / "seasons"
+    
+    for s in season_names:
+        s_path = seasons_dir / s
+        drafts = load_json(s_path / "drafts.json") or []
+        if not drafts:
+            continue
+        draft = drafts[0]
+        draft_order = draft.get("draft_order") or {}
+        slot_to_uid = {slot: uid for uid, slot in draft_order.items()}
+        rosters = load_json(s_path / "rosters.json") or []
+        uid_to_rid = {r.get("owner_id"): r.get("roster_id") for r in rosters}
+        
+        picks = load_json(s_path / "draft_picks.json") or []
+        for p in picks:
+            rd = p.get("round")
+            slot = p.get("draft_slot")
+            pick_no = p.get("pick_no")
+            pid = p.get("player_id")
+            pinfo = players_db.get(pid, {})
+            m = p.get("metadata") or {}
+            pname = pinfo.get("full_name") or f"{m.get('first_name', '')} {m.get('last_name', '')}".strip() or f"Player {pid}"
+            pos = pinfo.get("position") or m.get("position", "")
+            
+            orig_uid = slot_to_uid.get(slot)
+            orig_rid = uid_to_rid.get(orig_uid)
+            if orig_rid:
+                draft_pick_map[(str(s), rd, orig_rid)] = {
+                    "season": s,
+                    "round": rd,
+                    "pick_no": pick_no,
+                    "player_name": pname,
+                    "pos": pos,
+                    "player_id": pid
+                }
+    return draft_pick_map
+
+
+def format_traded_pick(dp, draft_pick_map):
+    season = str(dp.get("season"))
+    round_no = dp.get("round")
+    orig_rid = dp.get("roster_id")
+    base = f"{season} Rd {round_no}"
+    match = draft_pick_map.get((season, round_no, orig_rid)) if draft_pick_map else None
+    if match:
+        pos_str = f", {match['pos']}" if match.get("pos") else ""
+        return f"{base} (Pick #{match['pick_no']} → {match['player_name']}{pos_str})"
+    elif season.isdigit() and int(season) > 2026:
+        return f"{base} (Future / Pending Draft)"
+    return f"{base} Draft Pick"
+
+
+def build_full_history(league_dir, uid, players_db, draft_pick_map=None):
     """
     Builds a complete multi-year dataset tracking:
     - User's roster per season
@@ -66,6 +126,9 @@ def build_full_history(league_dir, uid, players_db):
     seasons_dir = league_dir / "seasons"
     season_names = sorted([d.name for d in seasons_dir.iterdir() if d.is_dir()])
     
+    if draft_pick_map is None:
+        draft_pick_map = build_draft_pick_map(league_dir, season_names, players_db)
+
     # Pre-load all season data
     raw_seasons = {}
     for s in season_names:
@@ -156,8 +219,8 @@ def build_full_history(league_dir, uid, players_db):
                 dp_traded = tx.get("draft_picks") or []
                 rec_players = [players_db.get(p, {}).get("full_name", p) for p, r in adds.items() if r == my_rid]
                 sent_players = [players_db.get(p, {}).get("full_name", p) for p, r in drops.items() if r == my_rid]
-                rec_picks = [f"{p.get('season')} Rd {p.get('round')}" for p in dp_traded if p.get("owner_id") == my_rid]
-                sent_picks = [f"{p.get('season')} Rd {p.get('round')}" for p in dp_traded if p.get("previous_owner_id") == my_rid]
+                rec_picks = [format_traded_pick(p, draft_pick_map) for p in dp_traded if p.get("owner_id") == my_rid]
+                sent_picks = [format_traded_pick(p, draft_pick_map) for p in dp_traded if p.get("previous_owner_id") == my_rid]
 
                 trade_summary = {
                     "season": s,
@@ -445,7 +508,7 @@ def get_all_league_managers(league_dir):
     return managers_dict
 
 
-def export_data_files(league_dir, default_uid, players_db, user_history):
+def export_data_files(league_dir, default_uid, players_db, user_history, draft_pick_map=None):
     """
     Exports organized dynasty history for all league managers to external files:
     - data/team_history.json (Pure JSON for data analysis/inspection)
@@ -454,12 +517,17 @@ def export_data_files(league_dir, default_uid, players_db, user_history):
     print("\nCompiling full league history for all managers...")
     all_managers_meta = get_all_league_managers(league_dir)
     
+    if draft_pick_map is None:
+        seasons_dir = league_dir / "seasons"
+        season_names = sorted([d.name for d in seasons_dir.iterdir() if d.is_dir()])
+        draft_pick_map = build_draft_pick_map(league_dir, season_names, players_db)
+    
     all_teams_export = {}
     for uid, info in all_managers_meta.items():
         if uid == default_uid:
             hist = user_history
         else:
-            hist = build_full_history(league_dir, uid, players_db)
+            hist = build_full_history(league_dir, uid, players_db, draft_pick_map)
         
         # Keep only teams that had at least 1 rostered player
         seasons_with_rosters = [s for s, d in hist["seasons_data"].items() if len(d["roster"]) > 0]
@@ -562,7 +630,10 @@ def main():
     uid = user["user_id"]
     players_db = load_json(DATA_DIR / "players.json") or {}
 
-    history = build_full_history(league_dir, uid, players_db)
+    season_names = sorted([d.name for d in (league_dir / "seasons").iterdir() if d.is_dir()])
+    draft_pick_map = build_draft_pick_map(league_dir, season_names, players_db)
+
+    history = build_full_history(league_dir, uid, players_db, draft_pick_map)
 
     print("=" * 78)
     print("SLEEPER DYNASTY TEAM EVOLUTION ORGANIZER")
@@ -587,7 +658,7 @@ def main():
 
     # Export data files for interactive dashboard
     if GENERATE_HTML:
-        export_data_files(league_dir, uid, players_db, history)
+        export_data_files(league_dir, uid, players_db, history, draft_pick_map)
 
 
 if __name__ == "__main__":
