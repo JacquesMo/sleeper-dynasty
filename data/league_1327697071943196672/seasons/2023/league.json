@@ -60,11 +60,11 @@
   },
   "avatar": null,
   "company_id": null,
-  "last_message_id": "1075121884506705920",
-  "sport": "nfl",
   "shard": 343,
   "season": "2023",
   "season_type": "regular",
+  "sport": "nfl",
+  "last_message_id": "1075121884506705920",
   "scoring_settings": {
     "sack": 0.0,
     "fgm_40_49": 0.0,
@@ -109,6 +109,7 @@
     "pts_allow_7_13": 0.0,
     "st_ff": 0.0
   },
+  "draft_id": "938583442021761025",
   "last_author_avatar": null,
   "last_author_display_name": "sys",
   "last_author_id": "166666666666666666",
@@ -118,14 +119,8 @@
   "last_message_time": 1710691541366,
   "last_pinned_message_id": null,
   "last_read_id": null,
-  "draft_id": "938583442021761025",
   "league_id": "938583442021761024",
   "previous_league_id": "802045785788235776",
-  "bracket_id": 1045836847743586304,
-  "bracket_overrides_id": null,
-  "group_id": null,
-  "loser_bracket_id": 1045836847751974912,
-  "loser_bracket_overrides_id": null,
   "roster_positions": [
     "QB",
     "QB",
@@ -148,5 +143,10 @@
     "BN",
     "BN"
   ],
+  "bracket_id": 1045836847743586304,
+  "bracket_overrides_id": null,
+  "group_id": null,
+  "loser_bracket_id": 1045836847751974912,
+  "loser_bracket_overrides_id": null,
   "total_rosters": 10
 }

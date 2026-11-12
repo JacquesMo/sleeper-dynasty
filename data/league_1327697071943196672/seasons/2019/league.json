@@ -52,11 +52,6 @@
   },
   "avatar": null,
   "company_id": null,
-  "sport": "nfl",
-  "season_type": "regular",
-  "season": "2019",
-  "last_message_id": "772584133481324544",
-  "shard": 308,
   "scoring_settings": {
     "sack": 0.0,
     "fgm_40_49": 0.0,
@@ -100,6 +95,11 @@
     "pts_allow_7_13": 0.0,
     "st_ff": 0.0
   },
+  "season": "2019",
+  "season_type": "regular",
+  "shard": 308,
+  "sport": "nfl",
+  "last_message_id": "772584133481324544",
   "last_author_avatar": "8a9ee5615d561192fd3c8953233c66be",
   "last_author_display_name": "jacques",
   "last_author_id": "81237981251649536",
@@ -108,8 +108,8 @@
   "last_message_text_map": null,
   "last_message_time": 1638560920642,
   "last_pinned_message_id": null,
-  "draft_id": "465659836562927616",
   "last_read_id": null,
+  "draft_id": "465659836562927616",
   "league_id": "465653851932848128",
   "previous_league_id": null,
   "roster_positions": [
